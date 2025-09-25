@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 
 export default function App() {
   return (
@@ -7,7 +7,11 @@ export default function App() {
       <Text style={styles.title}>BandaVida</Text>
 
       {/* Logo placeholder (replace with an SVG or image later) */}
-      <Text style={styles.logo}>❤️</Text>
+       <Image
+        source={'./assets/images/bandavidalogo.JPEG'}
+        style={styles.logo}
+        resizeMode="contain"
+      />
 
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Players</Text>
@@ -42,8 +46,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: {
-    fontSize: 48,
-    color: "red",
+    width: 120,   // adjust size as needed
+    height: 120,  // adjust size as needed
     marginBottom: 40,
   },
   button: {
