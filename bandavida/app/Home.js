@@ -1,7 +1,13 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import info from "./info";
+import { useNavigation } from "expo-router";
 
-export default function App() {
+
+export default function HomeScreen() {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>BandaVida</Text>
@@ -21,7 +27,10 @@ export default function App() {
         <Text style={styles.buttonText}>Alerts</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate("info")}
+      >
         <Text style={styles.buttonText}>Info</Text>
       </TouchableOpacity>
 
