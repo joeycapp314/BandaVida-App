@@ -12,16 +12,16 @@ export default function InfoScreen({ navigation }) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.paragraph}>
           <Text style={styles.bold}>
-            Welcome to <Text style={styles.link}>Bandavida</Text>!
+            Welcome to Bandavida!
           </Text>
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Players:</Text> The players tab will display all players previously added. To add a player, simply press "add player" and <Text style={styles.link}>Bandavida</Text> will begin taking baseline vitals for them!
+          <Text style={styles.bold}>Players:</Text> The players tab will display all players previously added. To add a player, simply press "add player" and Bandavida will begin taking baseline vitals for them!
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Alerts:</Text> The alerts menu will show you any alerts to come from any players. All alerts are <Text style={styles.link}>timestamped</Text> and alerts of higher importance will be pushed to the top and displayed in a darker red.
+          <Text style={styles.bold}>Alerts:</Text> The alerts menu will show you any alerts to come from any players. All alerts are timestamped and alerts of higher importance will be pushed to the top and displayed in a darker red.
         </Text>
 
         <Text style={styles.paragraph}>

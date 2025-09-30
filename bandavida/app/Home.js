@@ -3,6 +3,9 @@ import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import info from "./info";
+import Players from "./Players";
+import Settings from "./Settings";
+import Alerts from "./Alerts";
 import { useNavigation } from "expo-router";
 
 
@@ -19,11 +22,17 @@ export default function HomeScreen() {
         resizeMode="contain"
       />
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate("Players")}
+      >
         <Text style={styles.buttonText}>Players</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate("Alerts")}
+        >
         <Text style={styles.buttonText}>Alerts</Text>
       </TouchableOpacity>
 
@@ -34,7 +43,10 @@ export default function HomeScreen() {
         <Text style={styles.buttonText}>Info</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate("Settings")}
+        >
         <Text style={styles.buttonText}>Settings</Text>
       </TouchableOpacity>
     </View>
