@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
       {/* Logo placeholder (replace with an SVG or image later) */}
        <Image
-        source={'./assets/images/bandavidalogo.JPEG'}
+        source={require("../assets/images/bandavidalogo.jpeg")}
         style={styles.logo}
         resizeMode="contain"
       />
