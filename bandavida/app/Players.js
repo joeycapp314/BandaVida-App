@@ -27,28 +27,23 @@ export default function PlayersScreen({ navigation }) {
   const handleAddPlayer = () => {
     const { name, heightFeet, heightInches, weight } = formData;
 
-    // Trim and validate inputs
     const trimmedName = name.trim();
     const feet = parseInt(heightFeet, 10);
     const inches = parseInt(heightInches, 10);
     const parsedWeight = parseFloat(weight);
 
-    // Validation
     if (!trimmedName) {
       Alert.alert("Error", "Player name is required.");
       return;
     }
-
     if (isNaN(feet) || feet < 0) {
       Alert.alert("Error", "Height (feet) must be a non-negative number.");
       return;
     }
-
     if (isNaN(inches) || inches < 0 || inches > 11) {
       Alert.alert("Error", "Height (inches) must be between 0 and 11.");
       return;
     }
-
     if (isNaN(parsedWeight) || parsedWeight <= 0) {
       Alert.alert("Error", "Weight must be a positive number.");
       return;
@@ -81,7 +76,18 @@ export default function PlayersScreen({ navigation }) {
           contentContainerStyle={{ paddingBottom: 10 }}
         >
           {players.map((player, index) => (
-            <View key={index} style={styles.playerItem}>
+            <TouchableOpacity
+              key={index}
+              style={styles.playerItem}
+              onPress={() =>
+                navigation.navigate("PlayerStats", {
+                  name: player.name,
+                  height: player.height,
+                  weight: player.weight,
+                })
+              }
+              activeOpacity={0.8}
+            >
               <View>
                 <Text style={styles.playerName}>{player.name}</Text>
                 <Text style={styles.playerDetails}>
@@ -97,7 +103,10 @@ export default function PlayersScreen({ navigation }) {
                     style={styles.icon}
                   />
                 )}
-                <TouchableOpacity onPress={() => handleDeletePlayer(index)}>
+                <TouchableOpacity
+                  onPress={() => handleDeletePlayer(index)}
+                  style={styles.deleteButton}
+                >
                   <Ionicons
                     name="trash"
                     size={20}
@@ -106,7 +115,7 @@ export default function PlayersScreen({ navigation }) {
                   />
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
@@ -119,7 +128,7 @@ export default function PlayersScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Modal */}
+      {/* Modal for adding players */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -185,7 +194,7 @@ export default function PlayersScreen({ navigation }) {
                   }
                 />
 
-                {/* Placeholder buttons (no functionality yet) */}
+                {/* Placeholder measure buttons */}
                 <TouchableOpacity style={styles.measureButton}>
                   <Text style={styles.measureButtonText}>
                     Measure Baseline Blood Oxygen Level
@@ -251,6 +260,9 @@ const styles = StyleSheet.create({
   playerIcons: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  deleteButton: {
+    padding: 4,
   },
   icon: {
     marginLeft: 10,
