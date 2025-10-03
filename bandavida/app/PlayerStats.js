@@ -1,14 +1,19 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
-export default function PlayerStatsScreen({ route }) {
-  const { name, height, weight } = route.params;
+export default function PlayerStatsScreen() {
+  const { name, height, weight } = useLocalSearchParams();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{name}</Text>
-      <Text style={styles.info}><Text style={styles.bold}>Height:</Text> {height}</Text>
-      <Text style={styles.info}><Text style={styles.bold}>Weight:</Text> {weight}</Text>
+      <Text style={styles.info}>
+        <Text style={styles.bold}>Height:</Text> {height}
+      </Text>
+      <Text style={styles.info}>
+        <Text style={styles.bold}>Weight:</Text> {weight}
+      </Text>
     </View>
   );
 }

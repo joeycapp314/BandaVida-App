@@ -12,10 +12,14 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 
 export default function PlayersScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,7 +28,27 @@ export default function PlayersScreen({ navigation }) {
     weight: "",
   });
 
-  const handleAddPlayer = () => {
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('players');
+        if (saved) setPlayers(JSON.parse(saved));
+      } catch (e) {
+        console.warn('Failed to load players:', e);
+      }
+    };
+    loadPlayers();
+  }, [] );
+
+  const savePlayers = async (updatedList) => {
+    try {
+      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
+    } catch (e) {
+      console.warn("Failed to save players:", e);
+    }
+  };
+
+  const handleAddPlayer = async () => {
     const { name, heightFeet, heightInches, weight } = formData;
 
     const trimmedName = name.trim();
@@ -56,15 +80,29 @@ export default function PlayersScreen({ navigation }) {
       alert: trimmedName === "Player X",
     };
 
-    setPlayers([...players, newPlayer]);
+    const updatedList = [...players, newPlayer];
+    setPlayers(updatedList);
+
+    try {
+      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
+    } catch (e) {
+      console.warn("Failed to save players:", e);
+    }
+
     setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
     setModalVisible(false);
   };
 
-  const handleDeletePlayer = (index) => {
-    const updatedPlayers = [...players];
-    updatedPlayers.splice(index, 1);
-    setPlayers(updatedPlayers);
+  const handleDeletePlayer = async (index) => {
+    const updatedList = [...players];
+    updatedList.splice(index, 1);
+    setPlayers(updatedList);
+
+    try {
+      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
+    } catch (e) {
+      console.warn("Failed to save players after deletion:", e);
+    }
   };
 
   return (
@@ -79,20 +117,22 @@ export default function PlayersScreen({ navigation }) {
             <TouchableOpacity
               key={index}
               style={styles.playerItem}
-              onPress={() =>
-                navigation.navigate("PlayerStats", {
-                  name: player.name,
-                  height: player.height,
-                  weight: player.weight,
-                })
+              onPress={() => {
+                router.push({
+                  pathname: "/PlayerStats",
+                  params: {
+                    name: player.name,
+                    height: player.height,
+                    weight: player.weight,
+                  },
+                });
               }
+            }
+
               activeOpacity={0.8}
             >
               <View>
                 <Text style={styles.playerName}>{player.name}</Text>
-                <Text style={styles.playerDetails}>
-                  {player.height} | {player.weight}
-                </Text>
               </View>
               <View style={styles.playerIcons}>
                 {player.alert && (
@@ -216,6 +256,15 @@ export default function PlayersScreen({ navigation }) {
                   onPress={handleAddPlayer}
                 >
                   <Text style={styles.confirmButtonText}>Confirm</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.confirmButton, { backgroundColor: '#ccc' }]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
+                  }}
+                >
+                  <Text style={[styles.confirmButtonText, { color: '#333' }]}>Cancel</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

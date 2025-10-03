@@ -21,7 +21,7 @@ export default function App() {
         <Stack.Screen name="Players" component={PlayersScreen} />
         <Stack.Screen name="Alerts" component={AlertsScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
-        <Stack.Screen name="PlayerStats" component={PlayerStatsScreen} />
+        <Stack.Screen name ="PlayerStats" component={PlayerStatsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
