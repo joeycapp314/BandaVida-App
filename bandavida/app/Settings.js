@@ -1,12 +1,130 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from "react-native";
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen() {
+  const [settings, setSettings] = useState([
+    { label: "Impact", color: "#2E6375", on: true },
+    { label: "Heart Rate", color: "#A7E36E", on: true },
+    { label: "Blood Oxygen Level", color: "#E83030", on: true },
+    { label: "Height & Weight", color: "#9FD7F0", on: true },
+    { label: "Player Averages", color: "#000000", on: true },
+    { label: "Above Average Alert", color: "#FFF200", on: false },
+  ]);
+
+  const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(null);
+
+  const colorOptions = [
+    "#2E6375",
+    "#A7E36E",
+    "#E83030",
+    "#9FD7F0",
+    "#000000",
+    "#FFF200",
+    "#FF8C00",
+    "#9B59B6",
+    "#1ABC9C",
+  ];
+
+  const toggleSetting = (index, value) => {
+    const updated = [...settings];
+    updated[index].on = value;
+    setSettings(updated);
+  };
+
+  const openColorPicker = (index) => {
+    setCurrentIndex(index);
+    setColorPickerVisible(true);
+  };
+
+  const selectColor = (color) => {
+    if (currentIndex !== null) {
+      const updated = [...settings];
+      updated[currentIndex].color = color;
+      setSettings(updated);
+    }
+    setColorPickerVisible(false);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>Settings</Text>
+
+        {/* Table Header */}
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerText, { flex: 2 }]}>Display</Text>
+          <Text style={styles.headerText}>On</Text>
+          <Text style={styles.headerText}>Off</Text>
+        </View>
+
+        {/* Settings Rows */}
+        {settings.map((item, index) => (
+          <View key={index} style={styles.row}>
+            <TouchableOpacity
+              onPress={() => openColorPicker(index)}
+              style={[styles.colorBox, { backgroundColor: item.color }]}
+            />
+            <Text style={styles.label}>{item.label}</Text>
+
+            <TouchableOpacity
+              style={styles.radioContainer}
+              onPress={() => toggleSetting(index, true)}
+            >
+              <View style={[styles.radioOuter]}>
+                {item.on && <View style={styles.radioInner} />}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.radioContainer}
+              onPress={() => toggleSetting(index, false)}
+            >
+              <View style={[styles.radioOuter]}>
+                {!item.on && <View style={styles.radioInner} />}
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Color Picker Modal */}
+      <Modal
+        transparent={true}
+        visible={colorPickerVisible}
+        animationType="fade"
+        onRequestClose={() => setColorPickerVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Choose a Color</Text>
+            <View style={styles.colorGrid}>
+              {colorOptions.map((color, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => selectColor(color)}
+                  style={[styles.colorOption, { backgroundColor: color }]}
+                />
+              ))}
+            </View>
+            <TouchableOpacity
+              onPress={() => setColorPickerVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -22,28 +140,90 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  content: {
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  headerText: {
     flex: 1,
-  },
-  paragraph: {
     fontSize: 16,
-    marginBottom: 15,
-    lineHeight: 22,
-  },
-  bold: {
     fontWeight: "bold",
+    textAlign: "center",
   },
-  link: {
-    color: "blue",
-    textDecorationLine: "underline",
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 0.5,
+    borderColor: "#ccc",
   },
-  homeButton: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    zIndex: 10,
+  colorBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 3,
+    marginRight: 10,
   },
-  homeButtonText: {
+  label: {
+    flex: 2,
+    fontSize: 16,
+  },
+  radioContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#666",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "gray",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBox: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: 250,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  colorGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  colorOption: {
+    width: 30,
+    height: 30,
+    borderRadius: 5,
+    margin: 6,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  closeButton: {
+    marginTop: 10,
+  },
+  closeButtonText: {
     color: "#007BFF",
     fontSize: 16,
   },
