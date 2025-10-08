@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,20 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
-export default function SettingsScreen() {
-  const [settings, setSettings] = useState([
+export default function SettingsScreen({ navigation }) {
+  const defaultSettings = [
     { label: "Impact", color: "#2E6375", on: true },
     { label: "Heart Rate", color: "#A7E36E", on: true },
     { label: "Blood Oxygen Level", color: "#E83030", on: true },
     { label: "Height & Weight", color: "#9FD7F0", on: true },
     { label: "Player Averages", color: "#000000", on: true },
     { label: "Above Average Alert", color: "#FFF200", on: false },
-  ]);
+  ];
 
+  const [settings, setSettings] = useState(defaultSettings);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(null);
 
@@ -33,24 +36,81 @@ export default function SettingsScreen() {
     "#1ABC9C",
   ];
 
-  const toggleSetting = (index, value) => {
-    const updated = [...settings];
-    updated[index].on = value;
-    setSettings(updated);
+  // Helper: save to AsyncStorage (log errors)
+  const saveSettings = async (newSettings) => {
+    try {
+      await AsyncStorage.setItem("userSettings", JSON.stringify(newSettings));
+      console.log("Settings saved:", newSettings);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+    }
   };
 
+  // Load settings from AsyncStorage safely
+  const loadSettings = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("userSettings");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setSettings(parsed);
+          console.log("Loaded settings from storage:", parsed);
+        } catch (parseErr) {
+          console.warn("Could not parse saved settings, using defaults.", parseErr);
+          setSettings(defaultSettings);
+        }
+      } else {
+        console.log("No saved settings found — using defaults.");
+        setSettings(defaultSettings);
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      setSettings(defaultSettings);
+    }
+  };
+
+  // Reload settings every time screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      (async () => {
+        if (!mounted) return;
+        await loadSettings();
+      })();
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
+
+  // Toggle On/Off immutably and save
+  const toggleSetting = (index, value) => {
+    setSettings((prev) => {
+      const updated = prev.map((s, i) => (i === index ? { ...s, on: value } : s));
+      saveSettings(updated);
+      return updated;
+    });
+  };
+
+  // Open color picker
   const openColorPicker = (index) => {
     setCurrentIndex(index);
     setColorPickerVisible(true);
   };
 
+  // Select color immutably and save
   const selectColor = (color) => {
-    if (currentIndex !== null) {
-      const updated = [...settings];
-      updated[currentIndex].color = color;
-      setSettings(updated);
+    if (currentIndex === null) {
+      setColorPickerVisible(false);
+      return;
     }
+    setSettings((prev) => {
+      const updated = prev.map((s, i) => (i === currentIndex ? { ...s, color } : s));
+      saveSettings(updated);
+      return updated;
+    });
     setColorPickerVisible(false);
+    setCurrentIndex(null);
   };
 
   return (
@@ -100,7 +160,10 @@ export default function SettingsScreen() {
         transparent={true}
         visible={colorPickerVisible}
         animationType="fade"
-        onRequestClose={() => setColorPickerVisible(false)}
+        onRequestClose={() => {
+          setColorPickerVisible(false);
+          setCurrentIndex(null);
+        }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -115,7 +178,10 @@ export default function SettingsScreen() {
               ))}
             </View>
             <TouchableOpacity
-              onPress={() => setColorPickerVisible(false)}
+              onPress={() => {
+                setColorPickerVisible(false);
+                setCurrentIndex(null);
+              }}
               style={styles.closeButton}
             >
               <Text style={styles.closeButtonText}>Cancel</Text>
