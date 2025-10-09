@@ -5,8 +5,6 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-nati
 export default function InfoScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      {/* Title */}
-      <Text style={styles.title}>Information</Text>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -17,7 +15,8 @@ export default function InfoScreen({ navigation }) {
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Players:</Text> The players tab will display all players previously added. To add a player, simply press "add player" and Bandavida will begin taking baseline vitals for them!
+          <Text style={styles.bold}>Players:</Text> The players tab will display all players previously added. To add a player, simply press "add player" and enter 
+          the player's metric and begin taking baseline measurements! An alert icon will display next to a player when an alert has been triggered.
         </Text>
 
         <Text style={styles.paragraph}>

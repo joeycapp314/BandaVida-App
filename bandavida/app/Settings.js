@@ -116,13 +116,11 @@ export default function SettingsScreen({ navigation }) {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>Settings</Text>
-
         {/* Table Header */}
         <View style={styles.headerRow}>
           <Text style={[styles.headerText, { flex: 2 }]}>Display</Text>
-          <Text style={styles.headerText}>On</Text>
-          <Text style={styles.headerText}>Off</Text>
+          <Text style={styles.headerText}>      On</Text>
+          <Text style={styles.headerText}>      Off</Text>
         </View>
 
         {/* Settings Rows */}
