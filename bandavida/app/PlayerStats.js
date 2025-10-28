@@ -15,6 +15,8 @@ export default function PlayerStatsScreen({ route }) {
     impact: "#195d7c",
     heart: "#8ae68a",
     oxygen: "#ff4c4c",
+    heightWeight: "#9FD7F0",
+    avgLine: "#000000",
   });
 
   useEffect(() => {
@@ -36,6 +38,9 @@ export default function PlayerStatsScreen({ route }) {
             heightWeight:
               settings.find((s) => s.label === "Height & Weight")?.color ||
               colors.heightWeight,
+            avgLine:
+              settings.find((s) => s.label === "Average Line")?.color ||
+              "#000000",
           };
 
           // If route param provided a single barColor, let it override all
@@ -70,41 +75,109 @@ export default function PlayerStatsScreen({ route }) {
   const impact = 25;
   const heartRate = 100;
   const bloodOxygen = 97;
+  const avgImpact = 20;
+  const avgHeartRate = 85;
+  const avgBloodOxygen = 95;
 
-  return (
+  // Max values of each metric
+  const MAX_IMPACT = 150;
+  const MAX_HEARTRATE = 200;
+  const MAX_BLOODOXYGEN = 100;
+
+  //Each bar's height
+  const MAX_BAR_HEIGHT = 220;
+
+  const impactHeight = (impact / MAX_IMPACT) * MAX_BAR_HEIGHT;
+  const heartHeight = (heartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
+  const oxygenHeight = (bloodOxygen / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
+
+  // Average line positions (same relative scaling)
+  const avgImpactHeight = (avgImpact / MAX_IMPACT) * MAX_BAR_HEIGHT;
+  const avgHeartHeight = (avgHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
+  const avgOxygenHeight = (avgBloodOxygen / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
+
+ return (
     <View style={styles.container}>
       {/* Centered player name */}
       <Text style={styles.nameText}>{name}</Text>
 
-      {/* Bars area (simple stacked columns similar to your mockup) */}
+      {/* Bars section */}
       <View style={styles.graphRow}>
+        {/* Impact Bar */}
         <View style={styles.barColumn}>
-          <View style={[styles.bar, { height: 120, backgroundColor: colors.impact }]}>
-            <Text style={styles.barValueText}>25 G</Text>
+          <View
+            style={[
+              styles.bar,
+              { height: impactHeight, backgroundColor: colors.impact },
+            ]}
+          >
+            <View
+              style={[
+                styles.avgLine,
+                { backgroundColor: colors.avgLine, bottom: avgImpactHeight },
+              ]}
+            />
+            <Text style={styles.barValueText}>{impact} G</Text>
           </View>
           <Text style={styles.barLabel}>Last Impact Taken</Text>
         </View>
 
+        {/* Heart Rate Bar */}
         <View style={styles.barColumn}>
-          <View style={[styles.bar, { height: 180, backgroundColor: colors.heart }]}>
-            <Text style={styles.barValueText}>100 bpm</Text>
+          <View
+            style={[
+              styles.bar,
+              { height: heartHeight, backgroundColor: colors.heart },
+            ]}
+          >
+            <View
+              style={[
+                styles.avgLine,
+                { backgroundColor: colors.avgLine, bottom: avgHeartHeight },
+              ]}
+            />
+            <Text style={styles.barValueText}>{heartRate} bpm</Text>
           </View>
           <Text style={styles.barLabel}>Heart Rate</Text>
         </View>
 
+        {/* Blood Oxygen Bar */}
         <View style={styles.barColumn}>
-          <View style={[styles.bar, { height: 220, backgroundColor: colors.oxygen }]}>
-            <Text style={styles.barValueText}>97%</Text>
+          <View
+            style={[
+              styles.bar,
+              { height: oxygenHeight, backgroundColor: colors.oxygen },
+            ]}
+          >
+            <View
+              style={[
+                styles.avgLine,
+                { backgroundColor: colors.avgLine, bottom: avgOxygenHeight },
+              ]}
+            />
+            <Text style={styles.barValueText}>{bloodOxygen}%</Text>
           </View>
           <Text style={styles.barLabel}>Blood Oxygen</Text>
         </View>
       </View>
 
+      {/* Key / Legend */}
+      <View style={styles.legendBox}>
+        <View style={styles.legendContent}>
+          <View style={styles.solidLine} />
+          <Text style={styles.legendLabel}>Player Avg</Text>
+        </View>
+      </View>
+
+
       {/* Height & Weight Box */}
       <View
         style={[
           styles.infoBox,
-          { backgroundColor: colors.heightWeight, borderColor: colors.heightWeight },
+          {
+            backgroundColor: colors.heightWeight,
+            borderColor: colors.heightWeight,
+          },
         ]}
       >
         <Text style={styles.infoText}>
@@ -120,6 +193,7 @@ export default function PlayerStatsScreen({ route }) {
   );
 }
 
+// === Styles ===
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -143,17 +217,29 @@ const styles = StyleSheet.create({
   barColumn: {
     alignItems: "center",
     width: 80,
+    position: "relative",
   },
   bar: {
     width: 60,
     borderRadius: 6,
     justifyContent: "flex-end",
+    alignItems: "center",
     paddingBottom: 12,
+    position: "relative",
+  },
+  avgLine: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    height: 3,
+    borderRadius: 2,
+    opacity: 0.8,
   },
   barValueText: {
     color: "white",
     fontWeight: "700",
     textAlign: "center",
+    zIndex: 1,
   },
   barLabel: {
     marginTop: 8,
@@ -169,11 +255,43 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 16,
-    color: "white",
+    color: "black",
     marginBottom: 6,
     textAlign: "center",
   },
   infoLabel: {
     fontWeight: "700",
+  },
+
+  legendBox: {
+  borderWidth: 1,
+  borderColor: "#000",
+  borderRadius: 4,
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  alignSelf: "center",
+  marginTop: 16,
+  backgroundColor: "#fff",
+  },
+
+  legendContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  solidLine: {
+    width: 30,
+    height: 2,
+    borderTopWidth: 2,
+    borderColor: "#000",
+    borderStyle: "solid",
+    marginRight: 8,
+    backgroundColor: "transparent",
+  },
+
+  legendLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#000",
   },
 });
