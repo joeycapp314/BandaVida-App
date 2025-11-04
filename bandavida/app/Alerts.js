@@ -1,34 +1,50 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 
 export default function AlertsScreen() {
-  // Example alerts — these could come from your backend or local state
-  const alerts = [
-    {
-      id: 1,
-      player: "John Doe",
-      type: "Heart Rate",
-      level: "critical", // "critical" = red, "warning" = yellow
-      message: "is critically above normal!",
-      time: "10:45 AM",
-    },
-    {
-      id: 2,
-      player: "Sarah Lee",
-      type: "Impact",
-      level: "warning",
-      message: "is above normal!",
-      time: "10:50 AM",
-    },
-    {
-      id: 3,
-      player: "Joe Smith",
-      type: "Blood Oxygen",
-      level: "critical",
-      message: "is below normal!",
-      time: "11:00 AM",
-    },
-  ];
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Update this URL if you’re running the backend elsewhere (e.g. partner’s machine)
+  const API_BASE_URL = "http://10.132.26.60:5000";  
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/alert`);
+        const data = await response.json();
+
+        // Map database fields to what the UI expects
+        const mappedAlerts = data.map((a, index) => ({
+          id: a.ALERT_ID || index,
+          player: a.PNAME,
+          type: a.ALERT_TYPE,
+          level: a.SEVERITY.toLowerCase(), // "major" or "minor"
+          message: a.HILO === "high"
+            ? "is above normal!"
+            : "is below normal!",
+          time: a.ALERT_TIME,
+        }));
+
+        setAlerts(mappedAlerts);
+      } catch (error) {
+        console.error("Error fetching alerts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+        <Text>Loading alerts...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -37,9 +53,9 @@ export default function AlertsScreen() {
           key={alert.id}
           style={[
             styles.alertBox,
-            alert.level === "critical"
-              ? styles.criticalBackground
-              : styles.warningBackground,
+            alert.level === "major"
+              ? styles.majorBackground
+              : styles.minorBackground,
           ]}
         >
           <View style={styles.row}>
@@ -73,10 +89,10 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 6,
   },
-  criticalBackground: {
+  majorBackground: {
     backgroundColor: "#8f1515ff", // red
   },
-  warningBackground: {
+  minorBackground: {
     backgroundColor: "#fbc02d", // yellow
   },
   row: {
@@ -105,5 +121,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#ffffffff",
     marginTop: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
