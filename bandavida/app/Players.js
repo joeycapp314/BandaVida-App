@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,8 +13,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
+
+// ---------- REPLACE ASYNC STORAGE WITH BACKEND ----------
+const API_BASE_URL = "http://10.132.26.60:5000"; // <-- put your server IP and port here
 
 export default function PlayersScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
@@ -28,26 +29,22 @@ export default function PlayersScreen({ navigation }) {
     weight: "",
   });
 
+  // ---------------- Load players from database ----------------
   useEffect(() => {
     const loadPlayers = async () => {
       try {
-        const saved = await AsyncStorage.getItem('players');
-        if (saved) setPlayers(JSON.parse(saved));
+        const response = await fetch(`${API_BASE_URL}/player`);
+        if (!response.ok) throw new Error("Failed to fetch players");
+        const data = await response.json();
+        setPlayers(data);
       } catch (e) {
-        console.warn('Failed to load players:', e);
+        console.warn("Failed to load players:", e);
       }
     };
     loadPlayers();
-  }, [] );
+  }, []);
 
-  const savePlayers = async (updatedList) => {
-    try {
-      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
-    } catch (e) {
-      console.warn("Failed to save players:", e);
-    }
-  };
-
+  // ---------------- Add player to database ----------------
   const handleAddPlayer = async () => {
     const { name, heightFeet, heightInches, weight } = formData;
 
@@ -75,39 +72,56 @@ export default function PlayersScreen({ navigation }) {
 
     const newPlayer = {
       name: trimmedName,
-      height: `${feet}ft ${inches}in`,
-      weight: `${parsedWeight} lbs`,
-      alert: trimmedName === "Player X",
+      height_ft: feet,
+      height_in: inches,
+      weight: parsedWeight,
+      rest_rate: 0,
+      active_rate: 0,
+      base_bloodox: 0,
     };
 
-    const updatedList = [...players, newPlayer];
-    setPlayers(updatedList);
-
     try {
-      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
-    } catch (e) {
-      console.warn("Failed to save players:", e);
-    }
+      const response = await fetch(`${API_BASE_URL}/player`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPlayer),
+      });
 
-    setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
-    setModalVisible(false);
+      if (!response.ok) throw new Error("Failed to add player");
+
+      setPlayers((prev) => [...prev, newPlayer]);
+      setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
+      setModalVisible(false);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Unable to add player to the database.");
+    }
   };
 
+  // ---------------- Delete player from database ----------------
   const handleDeletePlayer = async (index) => {
-    const updatedList = [...players];
-    updatedList.splice(index, 1);
-    setPlayers(updatedList);
+    const playerToDelete = players[index];
 
     try {
-      await AsyncStorage.setItem("players", JSON.stringify(updatedList));
-    } catch (e) {
-      console.warn("Failed to save players after deletion:", e);
+      const response = await fetch(
+        `${API_BASE_URL}/player/${encodeURIComponent(playerToDelete.name)}`,
+        { method: "DELETE" }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete player");
+
+      const updatedList = [...players];
+      updatedList.splice(index, 1);
+      setPlayers(updatedList);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Unable to delete player from the database.");
     }
   };
 
+  // ---------------- UI ----------------
   return (
     <View style={styles.container}>
-      {/* Player List */}
       <View style={styles.content}>
         <ScrollView
           style={styles.scrollView}
@@ -117,18 +131,16 @@ export default function PlayersScreen({ navigation }) {
             <TouchableOpacity
               key={index}
               style={styles.playerItem}
-              onPress={() => {
+              onPress={() =>
                 router.push({
                   pathname: "/PlayerStats",
                   params: {
                     name: player.name,
-                    height: player.height,
-                    weight: player.weight,
+                    height: `${player.height_ft}ft ${player.height_in}in`,
+                    weight: `${player.weight} lbs`,
                   },
-                });
+                })
               }
-            }
-
               activeOpacity={0.8}
             >
               <View>
@@ -159,7 +171,6 @@ export default function PlayersScreen({ navigation }) {
           ))}
         </ScrollView>
 
-        {/* Add Player Button */}
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
@@ -168,7 +179,6 @@ export default function PlayersScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Modal for adding players */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -234,23 +244,6 @@ export default function PlayersScreen({ navigation }) {
                   }
                 />
 
-                {/* Placeholder measure buttons */}
-                <TouchableOpacity style={styles.measureButton}>
-                  <Text style={styles.measureButtonText}>
-                    Measure Baseline Blood Oxygen Level
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.measureButton}>
-                  <Text style={styles.measureButtonText}>
-                    Measure Resting Heartrate
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.measureButton}>
-                  <Text style={styles.measureButtonText}>
-                    Measure Active Heartrate
-                  </Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity
                   style={styles.confirmButton}
                   onPress={handleAddPlayer}
@@ -258,13 +251,15 @@ export default function PlayersScreen({ navigation }) {
                   <Text style={styles.confirmButtonText}>Confirm</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.confirmButton, { backgroundColor: '#ccc' }]}
+                  style={[styles.confirmButton, { backgroundColor: "#ccc" }]}
                   onPress={() => {
                     setModalVisible(false);
                     setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
                   }}
                 >
-                  <Text style={[styles.confirmButtonText, { color: '#333' }]}>Cancel</Text>
+                  <Text style={[styles.confirmButtonText, { color: "#333" }]}>
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
