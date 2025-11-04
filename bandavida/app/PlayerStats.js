@@ -9,7 +9,7 @@ export default function PlayerStatsScreen({ route }) {
   const localParams = useLocalSearchParams ? useLocalSearchParams() : null;
   const params = (route && route.params) || localParams || {};
 
-  const { name = "Player", height = "-", weight = "-", barColor } = params;
+  const { name = "Player", height = "-", weight = "-", barColor, restingHeartRate = "-", activeHeartRate = "-", baseBloodOx = "-" } = params;
 
   const [colors, setColors] = useState({
     impact: "#195d7c",
@@ -71,13 +71,11 @@ export default function PlayerStatsScreen({ route }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barColor]);
 
-  // Example stats (replace with your real data)
+  // Example stats (replace with real data)
   const impact = 25;
   const heartRate = 100;
   const bloodOxygen = 97;
   const avgImpact = 20;
-  const avgHeartRate = 85;
-  const avgBloodOxygen = 95;
 
   // Max values of each metric
   const MAX_IMPACT = 150;
@@ -93,8 +91,9 @@ export default function PlayerStatsScreen({ route }) {
 
   // Average line positions (same relative scaling)
   const avgImpactHeight = (avgImpact / MAX_IMPACT) * MAX_BAR_HEIGHT;
-  const avgHeartHeight = (avgHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
-  const avgOxygenHeight = (avgBloodOxygen / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
+  const maxHeartHeight = (activeHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
+  const minHeartHeight = (restingHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
+  const avgOxygenHeight = (baseBloodOx / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
 
  return (
     <View style={styles.container}>
@@ -122,24 +121,42 @@ export default function PlayerStatsScreen({ route }) {
           <Text style={styles.barLabel}>Last Impact Taken</Text>
         </View>
 
-        {/* Heart Rate Bar */}
-        <View style={styles.barColumn}>
-          <View
-            style={[
-              styles.bar,
-              { height: heartHeight, backgroundColor: colors.heart },
-            ]}
-          >
-            <View
-              style={[
-                styles.avgLine,
-                { backgroundColor: colors.avgLine, bottom: avgHeartHeight },
-              ]}
-            />
-            <Text style={styles.barValueText}>{heartRate} bpm</Text>
-          </View>
-          <Text style={styles.barLabel}>Heart Rate</Text>
-        </View>
+      {/* Heart Rate Bar */}
+    <View style={styles.barColumn}>
+      {/* The bar itself */}
+      <View
+        style={[
+          styles.bar,
+          { height: heartHeight, backgroundColor: colors.heart },
+        ]}
+      >
+        <Text style={styles.barValueText}>{heartRate} bpm</Text>
+      </View>
+
+      {/* Active Avg (max) line */}
+      <View
+        style={[
+          styles.avgLine,
+          {
+            backgroundColor: "#000000ff",
+            bottom: maxHeartHeight,
+          },
+        ]}
+      />
+
+      {/* Resting Avg (min) line */}
+      <View
+        style={[
+          styles.avgLine,
+          {
+            backgroundColor: "#000000ff", // blue
+            bottom: minHeartHeight, 
+          },
+        ]}
+      />
+
+      <Text style={styles.barLabel}>Heart Rate</Text>
+    </View>
 
         {/* Blood Oxygen Bar */}
         <View style={styles.barColumn}>
@@ -152,7 +169,8 @@ export default function PlayerStatsScreen({ route }) {
             <View
               style={[
                 styles.avgLine,
-                { backgroundColor: colors.avgLine, bottom: avgOxygenHeight },
+                { backgroundColor: colors.avgLine, 
+                  bottom: avgOxygenHeight, }
               ]}
             />
             <Text style={styles.barValueText}>{bloodOxygen}%</Text>
@@ -187,6 +205,18 @@ export default function PlayerStatsScreen({ route }) {
         <Text style={styles.infoText}>
           <Text style={styles.infoLabel}>Weight: </Text>
           {weight}
+        </Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.infoLabel}>Active Heart Rate: </Text>
+          {activeHeartRate}
+        </Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.infoLabel}>Resting Heart Rate: </Text>
+          {restingHeartRate}
+        </Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.infoLabel}>Average Blood Oxygen: </Text>
+          {baseBloodOx}
         </Text>
       </View>
     </View>
@@ -229,11 +259,11 @@ const styles = StyleSheet.create({
   },
   avgLine: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    height: 3,
+    width: "100%",     // make it span the full width of the bar
+    height: 3,         // line thickness
+    backgroundColor: "black",
     borderRadius: 2,
-    opacity: 0.8,
+    zIndex: 10,
   },
   barValueText: {
     color: "white",

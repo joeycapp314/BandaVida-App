@@ -138,6 +138,9 @@ export default function PlayersScreen({ navigation }) {
                     name: player.name,
                     height: `${player.height_ft}ft ${player.height_in}in`,
                     weight: `${player.weight} lbs`,
+                    restingHeartRate: player.rest_rate,
+                    activeHeartRate: player.active_rate,
+                    baseBloodOx: player.base_bloodox,
                   },
                 })
               }
