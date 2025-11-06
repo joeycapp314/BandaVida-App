@@ -27,6 +27,9 @@ export default function PlayersScreen({ navigation }) {
     heightFeet: "",
     heightInches: "",
     weight: "",
+    restingHeartRate: "",
+    activeHeartRate: "",
+    baseBloodOx: "",
   });
 
   // ---------------- Load players from database ----------------
@@ -46,12 +49,15 @@ export default function PlayersScreen({ navigation }) {
 
   // ---------------- Add player to database ----------------
   const handleAddPlayer = async () => {
-    const { name, heightFeet, heightInches, weight } = formData;
+    const { name, heightFeet, heightInches, weight, restingHR, activeHR, baseBO } = formData;
 
     const trimmedName = name.trim();
     const feet = parseInt(heightFeet, 10);
     const inches = parseInt(heightInches, 10);
     const parsedWeight = parseFloat(weight);
+    const parsedResting = parseFloat(restingHR);
+    const parsedActive = parseFloat(activeHR);
+    const parsedBloodOxygen = parseFloat(baseBO);
 
     if (!trimmedName) {
       Alert.alert("Error", "Player name is required.");
@@ -69,15 +75,27 @@ export default function PlayersScreen({ navigation }) {
       Alert.alert("Error", "Weight must be a positive number.");
       return;
     }
+    if (isNaN(parsedResting) || parsedResting <= 0) {
+      Alert.alert("Error", "Heartrate must be a positive number.");
+      return;
+    }
+    if (isNaN(parsedActive) || parsedActive <= 0) {
+      Alert.alert("Error", "Heartrate must be a positive number.");
+      return;
+    }
+    if (isNaN(parsedBloodOxygen) || parsedBloodOxygen < 0 || parsedBloodOxygen > 100) {
+      Alert.alert("Error", "Blood oxygen must be between 0 and 100 %.");
+      return;
+    }
 
     const newPlayer = {
       name: trimmedName,
       height_ft: feet,
       height_in: inches,
       weight: parsedWeight,
-      rest_rate: 0,
-      active_rate: 0,
-      base_bloodox: 0,
+      rest_rate: parsedResting,
+      active_rate: parsedActive,
+      base_bloodox: parsedBloodOxygen,
     };
 
     try {
@@ -90,7 +108,7 @@ export default function PlayersScreen({ navigation }) {
       if (!response.ok) throw new Error("Failed to add player");
 
       setPlayers((prev) => [...prev, newPlayer]);
-      setFormData({ name: "", heightFeet: "", heightInches: "", weight: "" });
+      setFormData({ name: "", heightFeet: "", heightInches: "", weight: "", restingHR: "", activeHR: "", baseBO: "", });
       setModalVisible(false);
     } catch (err) {
       console.error(err);
@@ -246,6 +264,41 @@ export default function PlayersScreen({ navigation }) {
                     setFormData({ ...formData, weight: text })
                   }
                 />
+
+                {/* Resting Heart Rate*/}
+                <Text style={styles.modalLabel}>Resting Heart Rate</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter resting heart rate (bpm)"
+                  keyboardType="numeric"
+                  value={formData.restingHR}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, restingHR: text })
+                  }
+                />
+
+                <Text style={styles.modalLabel}>Active Heart Rate</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter active heart rate (bpm)"
+                  keyboardType="numeric"
+                  value={formData.activeHR}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, activeHR: text })
+                  }
+                />
+
+                <Text style={styles.modalLabel}>Average Blood Oxygen Level</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter base blood oxygen (%)"
+                  keyboardType="numeric"
+                  value={formData.baseBO}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, baseBO: text })
+                  }
+                />
+                {/* New fields end here */}
 
                 <TouchableOpacity
                   style={styles.confirmButton}
