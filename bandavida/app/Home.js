@@ -14,8 +14,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>BandaVida</Text>
-
-      {/* Logo placeholder (replace with an SVG or image later) */}
+      
        <Image
         source={require("../assets/images/bandavidalogo.jpeg")}
         style={styles.logo}
@@ -62,14 +61,14 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   title: {
-    fontSize: 28,
+    fontSize: 40,
     fontWeight: "600",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   logo: {
-    width: 120,   // adjust size as needed
-    height: 120,  // adjust size as needed
-    marginBottom: 40,
+    width: 160,   // adjust size as needed
+    height: 160,  // adjust size as needed
+    marginBottom: 20,
   },
   button: {
     backgroundColor: "#155d78",
@@ -83,6 +82,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "black",
+    color: "white",
   },
 });

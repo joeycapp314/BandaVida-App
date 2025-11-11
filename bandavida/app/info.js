@@ -34,7 +34,7 @@ export default function InfoScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 30,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },

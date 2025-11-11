@@ -19,6 +19,12 @@ const API_BASE_URL = "http://10.132.14.200:5000"; // <-- put your server IP and 
 
 export default function PlayersScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredPlayers = players.filter((player) =>
+    player.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
 
@@ -141,11 +147,22 @@ export default function PlayersScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        {/* Search Bar */}
+       <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#555" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search players"
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={{ paddingBottom: 10 }}
         >
-          {players.map((player, index) => (
+          {filteredPlayers.map((player, index) => (
             <TouchableOpacity
               key={index}
               style={styles.playerItem}
@@ -329,7 +346,7 @@ export default function PlayersScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 30,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },
@@ -337,7 +354,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollView: {
-    flexGrow: 0,
+    flexGrow: 1,
   },
   playerItem: {
     flexDirection: "row",
@@ -373,6 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginTop: 15,
+    marginBottom: 50,
   },
   addButtonText: {
     color: "#fff",
@@ -447,4 +465,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+searchInput: {
+  backgroundColor: "#f0f0f0",
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 10,
+  fontSize: 16,
+  marginBottom: 15,
+  borderWidth: 1,
+  borderColor: "#ccc",
+},
+searchContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#f0f0f0",
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  marginBottom: 15,
+  borderWidth: 1,
+  borderColor: "#ccc",
+},
+searchIcon: {
+  marginRight: 8,
+},
+searchInput: {
+  flex: 1,
+  fontSize: 16,
+  color: "#000",
+},
 });
