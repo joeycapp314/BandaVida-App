@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 // ---------- REPLACE ASYNC STORAGE WITH BACKEND ----------
-const API_BASE_URL = "http://10.132.26.60:5000"; // <-- put your server IP and port here
+const API_BASE_URL = "http://10.132.14.200:5000"; // <-- put your server IP and port here
 
 export default function PlayersScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
