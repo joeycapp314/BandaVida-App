@@ -18,12 +18,32 @@ export default function PlayerStatsScreen({ route }) {
     avgLine: "#000000",
   });
 
+  const [enabled, setEnabled] = useState({
+    impact: true,
+    heart: true,
+    oxygen: true,
+    heightWeight: true,
+    averages: true,
+  });
+
+
   useEffect(() => {
     const loadColors = async () => {
       try {
         const saved = await AsyncStorage.getItem("userSettings");
         if (saved) {
           const settings = JSON.parse(saved);
+
+          // Added: load toggles for enabled features
+          const enabledMap = {
+            impact: settings.find((s) => s.label === "Impact")?.on ?? true,
+            heart: settings.find((s) => s.label === "Heart Rate")?.on ?? true,
+            oxygen: settings.find((s) => s.label === "Blood Oxygen Level")?.on ?? true,
+            heightWeight: settings.find((s) => s.label === "Height & Weight")?.on ?? true,
+            averages: settings.find((s) => s.label === "Player Averages")?.on ?? true,
+          };
+          setEnabled(enabledMap);
+
           const colorMap = {
             impact:
               settings.find((s) => s.label === "Impact")?.color ||
@@ -103,66 +123,81 @@ export default function PlayerStatsScreen({ route }) {
       {/* Bars section */}
       <View style={styles.graphRow}>
         {/* Impact Bar */}
-        <View style={styles.barColumn}>
+        {enabled.impact && (<View style={styles.barColumn}>
           <View
             style={[
               styles.bar,
               { height: impactHeight, backgroundColor: colors.impact },
             ]}
           >
+            {enabled.averages && (
             <View
               style={[
                 styles.avgLine,
                 { backgroundColor: colors.avgLine, bottom: avgImpactHeight },
               ]}
             />
+            )}
             <Text style={styles.barValueText}>{impact} G</Text>
           </View>
           <Text style={styles.barLabel}>Last Impact Taken</Text>
         </View>
+        )}
 
       {/* Heart Rate Bar */}
-    <View style={styles.barColumn}>
-      {/* The bar itself */}
-      <View style={[styles.bar, { height: heartHeight, backgroundColor: colors.heart }]}>
-      <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: maxHeartHeight }]} />
-      <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: minHeartHeight }]} />
-      <Text style={styles.barValueText}>{heartRate} bpm</Text>
+      {enabled.heart && (<View style={styles.barColumn}>
+        {/* The bar itself */}
+        <View style={[styles.bar, { height: heartHeight, backgroundColor: colors.heart }]}>
+        {enabled.averages && (
+          <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: maxHeartHeight }]} />
+        )}  
+        {enabled.averages && (
+          <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: minHeartHeight }]} />
+        )}
+        <Text style={styles.barValueText}>{heartRate} bpm</Text>
+        </View>
+        <Text style={styles.barLabel}>Heart Rate</Text>
       </View>
-      <Text style={styles.barLabel}>Heart Rate</Text>
-    </View>
+      )}
 
         {/* Blood Oxygen Bar */}
-        <View style={styles.barColumn}>
+        {enabled.oxygen && (<View style={styles.barColumn}>
           <View
             style={[
               styles.bar,
               { height: oxygenHeight, backgroundColor: colors.oxygen },
             ]}
           >
-            <View
-              style={[
-                styles.avgLine,
-                { backgroundColor: colors.avgLine, 
-                  bottom: avgOxygenHeight, }
-              ]}
-            />
+            {enabled.averages && (
+              <View
+                style={[
+                  styles.avgLine,
+                  { backgroundColor: colors.avgLine, 
+                    bottom: avgOxygenHeight, }
+                ]}
+              />
+            )}
             <Text style={styles.barValueText}>{bloodOxygen}%</Text>
           </View>
           <Text style={styles.barLabel}>Blood Oxygen</Text>
         </View>
+        )}
       </View>
+            
 
       {/* Key / Legend */}
+      {enabled.averages &&(
       <View style={styles.legendBox}>
         <View style={styles.legendContent}>
           <View style={[styles.solidLine, { backgroundColor: colors.avgLine }]} />
           <Text style={styles.legendLabel}>Player Avg</Text>
         </View>
       </View>
+      )}
 
 
       {/* Height & Weight Box */}
+      {enabled.heightWeight && (
       <View
         style={[
           styles.infoBox,
@@ -193,6 +228,7 @@ export default function PlayerStatsScreen({ route }) {
           {baseBloodOx}
         </Text>
       </View>
+      )}
     </View>
   );
 }
@@ -202,7 +238,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
+    paddingTop: 30,
     alignItems: "center",
   },
   nameText: {
