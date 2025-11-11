@@ -39,8 +39,8 @@ export default function PlayerStatsScreen({ route }) {
               settings.find((s) => s.label === "Height & Weight")?.color ||
               colors.heightWeight,
             avgLine:
-              settings.find((s) => s.label === "Average Line")?.color ||
-              "#000000",
+              settings.find((s) => s.label === "Player Averages")?.color ||
+              colors.avgLine,
           };
 
           // If route param provided a single barColor, let it override all
@@ -50,13 +50,14 @@ export default function PlayerStatsScreen({ route }) {
               heart: barColor,
               oxygen: barColor,
               heightWeight: barColor,
+              avgLine: colorMap.avgLine,
             });
           } else {
             setColors(colorMap);
           }
         } else if (barColor) {
           // no saved settings but route gave a color
-          setColors({ impact: barColor, heart: barColor, oxygen: barColor, heightWeight: barColor, });
+          setColors({ impact: barColor, heart: barColor, oxygen: barColor, heightWeight: barColor, avgLine: "000000", });
         }
       } catch (err) {
         console.error("Error loading colors:", err);
@@ -124,37 +125,11 @@ export default function PlayerStatsScreen({ route }) {
       {/* Heart Rate Bar */}
     <View style={styles.barColumn}>
       {/* The bar itself */}
-      <View
-        style={[
-          styles.bar,
-          { height: heartHeight, backgroundColor: colors.heart },
-        ]}
-      >
-        <Text style={styles.barValueText}>{heartRate} bpm</Text>
+      <View style={[styles.bar, { height: heartHeight, backgroundColor: colors.heart }]}>
+      <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: maxHeartHeight }]} />
+      <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: minHeartHeight }]} />
+      <Text style={styles.barValueText}>{heartRate} bpm</Text>
       </View>
-
-      {/* Active Avg (max) line */}
-      <View
-        style={[
-          styles.avgLine,
-          {
-            backgroundColor: "#000000ff",
-            bottom: maxHeartHeight,
-          },
-        ]}
-      />
-
-      {/* Resting Avg (min) line */}
-      <View
-        style={[
-          styles.avgLine,
-          {
-            backgroundColor: "#000000ff", // blue
-            bottom: minHeartHeight, 
-          },
-        ]}
-      />
-
       <Text style={styles.barLabel}>Heart Rate</Text>
     </View>
 
@@ -182,7 +157,7 @@ export default function PlayerStatsScreen({ route }) {
       {/* Key / Legend */}
       <View style={styles.legendBox}>
         <View style={styles.legendContent}>
-          <View style={styles.solidLine} />
+          <View style={[styles.solidLine, { backgroundColor: colors.avgLine }]} />
           <Text style={styles.legendLabel}>Player Avg</Text>
         </View>
       </View>
@@ -259,9 +234,8 @@ const styles = StyleSheet.create({
   },
   avgLine: {
     position: "absolute",
-    width: "100%",     // make it span the full width of the bar
-    height: 3,         // line thickness
-    backgroundColor: "black",
+    width: "100%",     
+    height: 3,         
     borderRadius: 2,
     zIndex: 10,
   },
@@ -311,12 +285,9 @@ const styles = StyleSheet.create({
 
   solidLine: {
     width: 30,
-    height: 2,
-    borderTopWidth: 2,
-    borderColor: "#000",
-    borderStyle: "solid",
+    height: 3,
+    borderRadius: 2,
     marginRight: 8,
-    backgroundColor: "transparent",
   },
 
   legendLabel: {
