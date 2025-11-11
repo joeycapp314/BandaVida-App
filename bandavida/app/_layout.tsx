@@ -1,5 +1,11 @@
 import { Stack } from "expo-router";
+import React from "react";
+import AlertProvider from "./AlertProvider";
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <AlertProvider>
+      <Stack screenOptions={{ headerShown: true }} />
+    </AlertProvider>
+  );
 }

@@ -8,7 +8,6 @@ export default function PlayerStatsScreen({ route }) {
   // Support either route.params (React Navigation) OR useLocalSearchParams (expo-router)
   const localParams = useLocalSearchParams ? useLocalSearchParams() : null;
   const params = (route && route.params) || localParams || {};
-
   const { name = "Player", height = "-", weight = "-", barColor, restingHeartRate = "-", activeHeartRate = "-", baseBloodOx = "-" } = params;
 
   const [colors, setColors] = useState({

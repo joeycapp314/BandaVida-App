@@ -1,52 +1,51 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import info from "./info";
-import Players from "./Players";
-import Settings from "./Settings";
-import Alerts from "./Alerts";
-import { useNavigation } from "expo-router";
+// import { NavigationContainer } from "@react-navigation/native";
+// import { createNativeStackNavigator } from "@react-navigation/native-stack";
+// import info from "./info";
+// import Players from "./Players";
+// import Settings from "./Settings";
+// import Alerts from "./Alerts";
+import { useRouter } from "expo-router";
 
 
-export default function HomeScreen() {
-  const navigation = useNavigation();
+export default function HomeScreen({ navigation }) {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>BandaVida</Text>
 
-      {/* Logo placeholder (replace with an SVG or image later) */}
-       <Image
+      <Image
         source={require("../assets/images/bandavidalogo.jpeg")}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Players")}
+        onPress={() => router.push("/Players")}
       >
         <Text style={styles.buttonText}>Players</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Alerts")}
-        >
+        onPress={() => router.push("/Alerts")}
+      >
         <Text style={styles.buttonText}>Alerts</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("info")}
+        onPress={() => router.push("/info")}
       >
         <Text style={styles.buttonText}>Info</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Settings")}
-        >
+        onPress={() => router.push("/Settings")}
+      >
         <Text style={styles.buttonText}>Settings</Text>
       </TouchableOpacity>
     </View>

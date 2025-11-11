@@ -17,7 +17,7 @@ import { useRouter } from "expo-router";
 // ---------- REPLACE ASYNC STORAGE WITH BACKEND ----------
 const API_BASE_URL = "http://10.132.14.200:5000"; // <-- put your server IP and port here
 
-export default function PlayersScreen({ navigation }) {
+export default function PlayersScreen() {
   const [players, setPlayers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();

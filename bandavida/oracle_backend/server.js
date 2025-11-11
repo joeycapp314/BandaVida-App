@@ -300,7 +300,7 @@ app.get("/alert", async (req, res) => {
       `SELECT *
        FROM alert a
        LEFT JOIN player p ON a.pname = p.name
-       ORDER BY a.alert_time DESC`,
+       ORDER BY a.alert_id DESC`,
       [],
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
@@ -314,108 +314,108 @@ app.get("/alert", async (req, res) => {
 });
 
 //notifications
-app.post("/register-token", async (req, res) => {
-  const { player_name, expo_token } = req.body;
-  let connection;
-  try {
-    connection = await oracledb.getConnection(dbConfig);
-    await connection.execute(
-      `MERGE INTO push_tokens t
-       USING dual
-       ON (t.player_name = :player_name)
-       WHEN MATCHED THEN UPDATE SET t.expo_token = :expo_token
-       WHEN NOT MATCHED THEN INSERT (player_name, expo_token)
-       VALUES (:player_name, :expo_token)`,
-      { player_name, expo_token },
-      { autoCommit: true }
-    );
-    res.status(200).send("Token saved");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error saving token");
-  } finally {
-    if (connection) await connection.close();
-  }
-});
+// app.post("/register-token", async (req, res) => {
+//   const { player_name, expo_token } = req.body;
+//   let connection;
+//   try {
+//     connection = await oracledb.getConnection(dbConfig);
+//     await connection.execute(
+//       `MERGE INTO push_tokens t
+//        USING dual
+//        ON (t.player_name = :player_name)
+//        WHEN MATCHED THEN UPDATE SET t.expo_token = :expo_token
+//        WHEN NOT MATCHED THEN INSERT (player_name, expo_token)
+//        VALUES (:player_name, :expo_token)`,
+//       { player_name, expo_token },
+//       { autoCommit: true }
+//     );
+//     res.status(200).send("Token saved");
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send("Error saving token");
+//   } finally {
+//     if (connection) await connection.close();
+//   }
+// });
 
-let lastAlertId = 0; // track the last processed alert
+// let lastAlertId = 0; // track the last processed alert
 
-async function startAlertWatcher() {
-  let connection;
-  try {
-    connection = await oracledb.getConnection(dbConfig);
-    console.log("📡 Alert watcher started with polling...");
+// async function startAlertWatcher() {
+//   let connection;
+//   try {
+//     connection = await oracledb.getConnection(dbConfig);
+//     console.log("📡 Alert watcher started with polling...");
 
-    const poll = async () => {
-      try {
-        // Fetch only new alerts
-        const result = await connection.execute(
-          `SELECT * FROM alert WHERE alert_id > :lastId ORDER BY alert_id ASC`,
-          [lastAlertId],
-          { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
+//     const poll = async () => {
+//       try {
+//         // Fetch only new alerts
+//         const result = await connection.execute(
+//           `SELECT * FROM alert WHERE alert_id > :lastId ORDER BY alert_id ASC`,
+//           [lastAlertId],
+//           { outFormat: oracledb.OUT_FORMAT_OBJECT }
+//         );
 
-        for (const alert of result.rows) {
-          console.log("🚨 New alert detected:", alert);
+//         for (const alert of result.rows) {
+//           console.log("🚨 New alert detected:", alert);
 
-          // Update last processed ID
-          lastAlertId = alert.ALERT_ID;
+//           // Update last processed ID
+//           lastAlertId = alert.ALERT_ID;
 
-          // Send push notification
-          await sendPushNotification(alert);
-        }
-      } catch (err) {
-        console.error("❌ Polling error:", err);
-      } finally {
-        // Poll again after short interval
-        setTimeout(poll, 250); // 250 ms interval
-      }
-    };
+//           // Send push notification
+//           await sendPushNotification(alert);
+//         }
+//       } catch (err) {
+//         console.error("❌ Polling error:", err);
+//       } finally {
+//         // Poll again after short interval
+//         setTimeout(poll, 250); // 250 ms interval
+//       }
+//     };
 
-    // Start polling
-    poll();
-  } catch (err) {
-    console.error("❌ Error starting alert watcher:", err);
-    setTimeout(startAlertWatcher, 5000); // retry after 5s if connection fails
-  }
-}
+//     // Start polling
+//     poll();
+//   } catch (err) {
+//     console.error("❌ Error starting alert watcher:", err);
+//     setTimeout(startAlertWatcher, 5000); // retry after 5s if connection fails
+//   }
+// }
 
-startAlertWatcher().catch(console.error);
+// startAlertWatcher().catch(console.error);
 
-async function sendPushNotification(alert) {
-  let connection;
-  try {
-    connection = await oracledb.getConnection(dbConfig);
+// async function sendPushNotification(alert) {
+//   let connection;
+//   try {
+//     connection = await oracledb.getConnection(dbConfig);
 
-    // Fetch all registered tokens
-    const tokenResult = await connection.execute(
-      `SELECT expo_token FROM push_tokens`,
-      [],
-      { outFormat: oracledb.OUT_FORMAT_OBJECT }
-    );
+//     // Fetch all registered tokens
+//     const tokenResult = await connection.execute(
+//       `SELECT expo_token FROM push_tokens`,
+//       [],
+//       { outFormat: oracledb.OUT_FORMAT_OBJECT }
+//     );
 
-    if (tokenResult.rows.length === 0) return; // no tokens registered
+//     if (tokenResult.rows.length === 0) return; // no tokens registered
 
-    const messages = tokenResult.rows
-      .map(row => row.EXPO_TOKEN)
-      .filter(token => Expo.isExpoPushToken(token))
-      .map(token => ({
-        to: token,
-        sound: "default",
-        title: `⚠️ ${alert.SEVERITY.toUpperCase()} ${alert.ALERT_TYPE} alert`,
-        body: `${alert.PNAME} is ${alert.HILO} (${alert.MAGNITUDE})`,
-      }));
+//     const messages = tokenResult.rows
+//       .map(row => row.EXPO_TOKEN)
+//       .filter(token => Expo.isExpoPushToken(token))
+//       .map(token => ({
+//         to: token,
+//         sound: "default",
+//         title: `⚠️ ${alert.SEVERITY.toUpperCase()} ${alert.ALERT_TYPE} alert`,
+//         body: `${alert.PNAME} is ${alert.HILO} (${alert.MAGNITUDE})`,
+//       }));
 
-    if (messages.length > 0) {
-      await expo.sendPushNotificationsAsync(messages);
-      console.log(`📱 Notifications sent to ${messages.length} users`);
-    }
-  } catch (err) {
-    console.error("❌ Error sending push notification:", err);
-  } finally {
-    if (connection) await connection.close();
-  }
-}
+//     if (messages.length > 0) {
+//       await expo.sendPushNotificationsAsync(messages);
+//       console.log(`📱 Notifications sent to ${messages.length} users`);
+//     }
+//   } catch (err) {
+//     console.error("❌ Error sending push notification:", err);
+//   } finally {
+//     if (connection) await connection.close();
+//   }
+// }
 
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
