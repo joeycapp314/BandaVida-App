@@ -24,7 +24,15 @@ export default function AlertsScreen() {
             ? "is above normal!"
             : "is below normal!",
           time: a.ALERT_TIME,
-        }));
+        }))
+        .sort((a, b) => {
+          // Sort by severity: major before minor
+          if (a.level === "major" && b.level !== "major") return -1;
+          if (a.level !== "major" && b.level === "major") return 1;
+
+          // If same severity, sort by time (earlier first)
+          return new Date(a.time) - new Date(b.time);
+        });
 
         setAlerts(mappedAlerts);
       } catch (error) {

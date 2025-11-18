@@ -26,7 +26,9 @@ export default function PlayerStatsScreen({ route }) {
     averages: true,
   });
 
+  const [playerAlerts, setPlayerAlerts] = useState([]);
 
+ // ------------ Use Effect for the colors ---------------------
   useEffect(() => {
     const loadColors = async () => {
       try {
@@ -91,6 +93,37 @@ export default function PlayerStatsScreen({ route }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barColor]);
 
+  // -------------- Use effect for the alerts history ---------------
+  useEffect(() => {
+  const loadPlayerAlerts = async () => {
+    try {
+      const response = await fetch("http://10.132.14.200:5000/alert");
+      const data = await response.json();
+
+      const alertsForPlayer = data
+        .filter(a => a.PNAME === name) // only this player's alerts
+        .map(a => ({
+          id: a.ALERT_ID,
+          type: a.ALERT_TYPE,
+          level: a.SEVERITY.toLowerCase(),
+          message: a.HILO === "high" ? "is above normal!" : "is below normal!",
+          time: a.ALERT_TIME,
+        }))
+        .sort((a, b) => {
+          // Sort by time, most recent first
+          return new Date(b.time) - new Date(a.time); // new → old
+        });
+
+      setPlayerAlerts(alertsForPlayer);
+    } catch (err) {
+      console.error("Error loading player alerts:", err);
+    }
+  };
+
+  loadPlayerAlerts();
+}, [name]);
+
+
   // Example stats (replace with real data)
   const impact = 25;
   const heartRate = 100;
@@ -130,14 +163,6 @@ export default function PlayerStatsScreen({ route }) {
               { height: impactHeight, backgroundColor: colors.impact },
             ]}
           >
-            {enabled.averages && (
-            <View
-              style={[
-                styles.avgLine,
-                { backgroundColor: colors.avgLine, bottom: avgImpactHeight },
-              ]}
-            />
-            )}
             <Text style={styles.barValueText}>{impact} G</Text>
           </View>
           <Text style={styles.barLabel}>Last Impact Taken</Text>
@@ -216,19 +241,41 @@ export default function PlayerStatsScreen({ route }) {
           {weight}
         </Text>
         <Text style={styles.infoText}>
-          <Text style={styles.infoLabel}>Active Heart Rate: </Text>
-          {activeHeartRate}
-        </Text>
-        <Text style={styles.infoText}>
           <Text style={styles.infoLabel}>Resting Heart Rate: </Text>
           {restingHeartRate}
         </Text>
+        <Text style={styles.infoText}>
+          <Text style={styles.infoLabel}>Active Heart Rate: </Text>
+          {activeHeartRate}
+        </Text>
+
         <Text style={styles.infoText}>
           <Text style={styles.infoLabel}>Average Blood Oxygen: </Text>
           {baseBloodOx}
         </Text>
       </View>
       )}
+
+      {/*  ----------- Player Alert History ------------------- */}
+      {playerAlerts.length > 0 && (
+        <View style={styles.alertHistoryBox}>
+          <Text style={styles.alertHistoryTitle}>Alert History</Text>
+          {playerAlerts.map(alert => (
+            <View
+              key={alert.id}
+              style={[
+                styles.alertItem,
+                alert.level === "major" ? styles.majorBackground : styles.minorBackground,
+              ]}
+            >
+              <Text style={styles.alertText}>
+                {alert.type} {alert.message} ({alert.time})
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
     </View>
   );
 }
@@ -329,5 +376,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#000",
+  },
+
+  alertHistoryBox: {
+  width: "85%",
+  marginTop: 20,
+  padding: 12,
+  borderWidth: 1.5,
+  borderRadius: 6,
+  borderColor: "#ccc",
+  backgroundColor: "#f9f9f9",
+  },
+
+  alertHistoryTitle: {
+    fontWeight: "700",
+    fontSize: 16,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  alertItem: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    marginVertical: 4,
+  },
+
+  majorBackground: {
+    backgroundColor: "#8f1515ff",
+  },
+
+  minorBackground: {
+    backgroundColor: "#fbc02d",
+  },
+
+  alertText: {
+    color: "#fff",
+    fontSize: 14,
   },
 });

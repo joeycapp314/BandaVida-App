@@ -17,6 +17,7 @@ export default function SettingsScreen({ navigation }) {
     { label: "Blood Oxygen Level", color: "#E83030", on: true },
     { label: "Height & Weight", color: "#9FD7F0", on: true },
     { label: "Player Averages", color: "#000000", on: true },
+    { label: "Above Average Alert", color: "#FFF200", on: false },
   ];
 
   const [settings, setSettings] = useState(defaultSettings);

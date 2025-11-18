@@ -15,16 +15,20 @@ export default function InfoScreen({ navigation }) {
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Players:</Text> The players tab will display all players previously added. To add a player, simply press "add player" and enter 
-          the player's metric and begin taking baseline measurements! An alert icon will display next to a player when an alert has been triggered.
+          <Text style={styles.bold}>Players:</Text> The players tab will display all players added. To add a player, simply press "add player" and enter 
+          the player's metrics and baseline measurements! Tap on a player's name to pull up their stats page. 
+          To edit or delete a player, tap on the pencil or trash can respectively!
+          Additionally, an alert icon will display next to a player when an alert has been triggered.
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Alerts:</Text> The alerts menu will show you any alerts to come from any players. All alerts are timestamped and alerts of higher importance will be pushed to the top and displayed in a darker red.
+          <Text style={styles.bold}>Alerts:</Text> The alerts menu will show you any alerts to come from any players. 
+          All alerts are timestamped and alerts of higher importance will be pushed to the top and displayed in a darker red.
         </Text>
 
         <Text style={styles.paragraph}>
-          <Text style={styles.bold}>Settings:</Text> The settings menu will allow you to choose which vitals you would like to have displayed. You are also given the option to choose what color you would like each vital displayed in!
+          <Text style={styles.bold}>Settings:</Text> The settings menu will allow you to choose which vitals you would like to have shown in the stats menu. 
+          You are also given the option to choose what color you would like each vital displayed in!
         </Text>
       </ScrollView>
     </View>

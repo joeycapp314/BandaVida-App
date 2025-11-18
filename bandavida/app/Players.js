@@ -25,8 +25,12 @@ export default function PlayersScreen() {
     player.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [editingIndex, setEditingIndex] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
+  const [alerts, setAlerts] = useState([]);
+  const [seenAlerts, setSeenAlerts] = useState({});
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -53,8 +57,25 @@ export default function PlayersScreen() {
     loadPlayers();
   }, []);
 
+  // ------------------- Fetches alerts from database -------------------
+  useEffect(() => {
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/alert`);
+      const data = await response.json();
+      const activeAlerts = data.map((a) => a.PNAME);
+      setAlerts(activeAlerts);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+    }
+  };
+
+  fetchAlerts();
+}, []);
+
+
   // ---------------- Add player to database ----------------
-  const handleAddPlayer = async () => {
+  const handleSavePlayer = async () => {
     const { name, heightFeet, heightInches, weight, restingHR, activeHR, baseBO } = formData;
 
     const trimmedName = name.trim();
@@ -105,20 +126,41 @@ export default function PlayersScreen() {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/player`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPlayer),
+     if (editingIndex !== null) {
+      // EDIT mode: update existing player
+        const response = await fetch(
+          `${API_BASE_URL}/player/${encodeURIComponent(players[editingIndex].name)}`,
+          {
+            method: "PUT", // <- make sure your backend supports PUT for updates
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newPlayer),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to update player");
+
+        const updatedPlayers = [...players];
+        updatedPlayers[editingIndex] = newPlayer;
+        setPlayers(updatedPlayers);
+      } else {
+        // ADD mode: create new player
+        const response = await fetch(`${API_BASE_URL}/player`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newPlayer),
+        });
+        if (!response.ok) throw new Error("Failed to add player");
+        setPlayers((prev) => [...prev, newPlayer]);
+      }
+
+      // Reset modal
+      setFormData({
+        name: "", heightFeet: "", heightInches: "", weight: "", restingHR: "", activeHR: "", baseBO: ""
       });
-
-      if (!response.ok) throw new Error("Failed to add player");
-
-      setPlayers((prev) => [...prev, newPlayer]);
-      setFormData({ name: "", heightFeet: "", heightInches: "", weight: "", restingHR: "", activeHR: "", baseBO: "", });
+      setEditingIndex(null);
       setModalVisible(false);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Unable to add player to the database.");
+      Alert.alert("Error", editingIndex !== null ? "Unable to update player" : "Unable to add player");
     }
   };
 
@@ -142,6 +184,29 @@ export default function PlayersScreen() {
       Alert.alert("Error", "Unable to delete player from the database.");
     }
   };
+
+  //-------------------Edit Player in DataBase ------------------
+  const handleEditPlayer = (index) => {
+    const player = players[index];
+
+    // Load player info into form
+    setFormData({
+      name: player.name,
+      heightFeet: player.height_ft.toString(),
+      heightInches: player.height_in.toString(),
+      weight: player.weight.toString(),
+      restingHR: player.rest_rate.toString(),
+      activeHR: player.active_rate.toString(),
+      baseBO: player.base_bloodox.toString(),
+    });
+
+    // Store index for updating
+    setEditingIndex(index);
+
+    // Show modal
+    setModalVisible(true);
+  };
+
 
   // ---------------- UI ----------------
   return (
@@ -185,14 +250,35 @@ export default function PlayersScreen() {
                 <Text style={styles.playerName}>{player.name}</Text>
               </View>
               <View style={styles.playerIcons}>
-                {player.alert && (
+                {/*--------------- Alert "!" ----------------- */}
+                {alerts.includes(player.name) && !seenAlerts[player.name] && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSeenAlerts((prev) => ({ ...prev, [player.name]: true })); // hide it
+                      router.push({pathname: "/Alerts"});  // open Alerts page
+                    }}
+                  >
+                    <Ionicons
+                      name="alert"
+                      size={25}
+                      color="gold"
+                      style={styles.icon}
+                    />
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  onPress={() => handleEditPlayer(index)}
+                  style={styles.editButton}
+                >
                   <Ionicons
-                    name="alert"
+                    name="pencil"
                     size={20}
-                    color="red"
+                    color="#000"
                     style={styles.icon}
                   />
-                )}
+                </TouchableOpacity>
+
                 <TouchableOpacity
                   onPress={() => handleDeletePlayer(index)}
                   style={styles.deleteButton}
@@ -319,9 +405,11 @@ export default function PlayersScreen() {
 
                 <TouchableOpacity
                   style={styles.confirmButton}
-                  onPress={handleAddPlayer}
+                  onPress={handleSavePlayer}
                 >
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                  <Text style={styles.confirmButtonText}>
+                    {editingIndex !== null ? "Save Changes" : "Confirm"}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.confirmButton, { backgroundColor: "#ccc" }]}
