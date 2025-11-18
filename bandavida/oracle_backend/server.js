@@ -313,6 +313,34 @@ app.get("/alert", async (req, res) => {
   }
 });
 
+app.post("/alert", async (req, res) => {
+  const data = req.body;
+  console.log("Received alert:", data);
+
+  try {
+    const connection = await oracledb.getConnection(dbConfig);
+    await connection.execute(
+      `INSERT INTO alert (alert_id, alert_type, hilo, severity, magnitude, alert_time, pname)
+       VALUES (:alert_id, :alert_type, :hilo, :severity, :magnitude, :alert_time, :pname)`,
+      {
+        alert_id: data.alert_id,
+        alert_type: data.alert_type,
+        hilo: data.hilo,
+        severity: data.severity,
+        magnitude: data.magnitude,
+        alert_time: data.alert_time,
+        pname: data.pname
+      },
+      { autoCommit: true }
+    );
+
+    res.json({ message: "Alert added successfully" });
+  } catch (err) {
+    console.error("Error inserting alert:", err);
+    res.status(500).json({ error: "Database insert failed" });
+  }
+});
+
 //notifications
 // app.post("/register-token", async (req, res) => {
 //   const { player_name, expo_token } = req.body;

@@ -10,7 +10,7 @@ export default function AlertProvider({ children }) {
   const fetchAlerts = async () => {
     console.log("fetchAlerts called");
     try {
-      const res = await fetch("http://10.132.14.200:5000/alert");
+      const res = await fetch("http://10.132.30.49:5000/alert");
       console.log("fetch response", res);
       const alerts = await res.json();
       console.log("alerts json", alerts);
