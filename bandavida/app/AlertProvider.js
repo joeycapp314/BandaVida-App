@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import Toast from "react-native-toast-message";
 
+
 const AlertContext = createContext();
 
 export default function AlertProvider({ children }) {
+  const [allAlerts, setAllAlerts] = React.useState([]);
   const lastAlertId = useRef(null);
 
   useEffect(() => {
@@ -13,6 +15,7 @@ export default function AlertProvider({ children }) {
       const res = await fetch("http://10.132.30.49:5000/alert");
       console.log("fetch response", res);
       const alerts = await res.json();
+      setAllAlerts(alerts);
       console.log("alerts json", alerts);
 
       // Filter new alerts
@@ -47,7 +50,7 @@ export default function AlertProvider({ children }) {
 }, []);
 
   return (
-    <AlertContext.Provider value={{}}>
+    <AlertContext.Provider value={{ allAlerts }}>
       {children}
       <Toast />
     </AlertContext.Provider>

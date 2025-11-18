@@ -17,7 +17,7 @@ export default function SettingsScreen({ navigation }) {
     { label: "Blood Oxygen Level", color: "#E83030", on: true },
     { label: "Height & Weight", color: "#9FD7F0", on: true },
     { label: "Player Averages", color: "#000000", on: true },
-    { label: "Above Average Alert", color: "#FFF200", on: false },
+    { label: "Player Alerts", color: "#FFF200", on: false },
   ];
 
   const [settings, setSettings] = useState(defaultSettings);
@@ -113,6 +113,18 @@ export default function SettingsScreen({ navigation }) {
     setCurrentIndex(null);
   };
 
+  // Setting reset
+  const resetSettings = async () => {
+    try {
+      await AsyncStorage.removeItem("userSettings"); // remove saved settings
+      setSettings(defaultSettings); // reload defaults
+      console.log("Settings have been reset!");
+    } catch (error) {
+      console.error("Error resetting settings:", error);
+    }
+  };
+
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container}>
@@ -152,6 +164,14 @@ export default function SettingsScreen({ navigation }) {
           </View>
         ))}
       </ScrollView>
+      <TouchableOpacity
+        style={styles.resetButton}
+        onPress={resetSettings}
+      >
+        <Text style={styles.resetButtonText}>Reset Settings</Text>
+      </TouchableOpacity>
+
+    
 
       {/* Color Picker Modal */}
       <Modal
@@ -290,5 +310,20 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: "#007BFF",
     fontSize: 16,
+  },
+
+  resetButton: {
+  backgroundColor: "#FF4C4C",
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 6,
+  alignItems: "center",
+  marginVertical: 20,
+  },
+
+  resetButtonText: {
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 16,
   },
 });

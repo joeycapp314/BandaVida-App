@@ -4,11 +4,14 @@ import { View, Text, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router"; // optional; harmless if you don't use expo-router
 
+
 export default function PlayerStatsScreen({ route }) {
   // Support either route.params (React Navigation) OR useLocalSearchParams (expo-router)
   const localParams = useLocalSearchParams ? useLocalSearchParams() : null;
   const params = (route && route.params) || localParams || {};
   const { name = "Player", height = "-", weight = "-", barColor, restingHeartRate = "-", activeHeartRate = "-", baseBloodOx = "-" } = params;
+
+
 
   const [colors, setColors] = useState({
     impact: "#195d7c",
@@ -27,6 +30,22 @@ export default function PlayerStatsScreen({ route }) {
   });
 
   const [playerAlerts, setPlayerAlerts] = useState([]);
+  const [alertLookup, setAlertLookup] = useState({});
+
+  // Build latest alert per stat
+  const latestStatValues = {};
+  playerAlerts.forEach(alert => {
+    const type = alert.type.toLowerCase();
+    if (
+      !latestStatValues[type] ||
+      alert.id > latestStatValues[type].id
+    ) {
+      latestStatValues[type] = alert;
+    }
+  });
+
+
+
 
  // ------------ Use Effect for the colors ---------------------
   useEffect(() => {
@@ -43,6 +62,8 @@ export default function PlayerStatsScreen({ route }) {
             oxygen: settings.find((s) => s.label === "Blood Oxygen Level")?.on ?? true,
             heightWeight: settings.find((s) => s.label === "Height & Weight")?.on ?? true,
             averages: settings.find((s) => s.label === "Player Averages")?.on ?? true,
+            alerts: settings.find((s) => s.label === "Player Alerts")?.on ?? true,
+
           };
           setEnabled(enabledMap);
 
@@ -62,6 +83,9 @@ export default function PlayerStatsScreen({ route }) {
             avgLine:
               settings.find((s) => s.label === "Player Averages")?.color ||
               colors.avgLine,
+            alertIcon:
+              settings.find((s) => s.label === "Player Alerts")?.color ||
+              colors.alertIcon, 
           };
 
           // If route param provided a single barColor, let it override all
@@ -72,6 +96,7 @@ export default function PlayerStatsScreen({ route }) {
               oxygen: barColor,
               heightWeight: barColor,
               avgLine: colorMap.avgLine,
+              alertIcon: colorMap.alertIcon,
             });
           } else {
             setColors(colorMap);
@@ -108,6 +133,7 @@ export default function PlayerStatsScreen({ route }) {
           level: a.SEVERITY.toLowerCase(),
           message: a.HILO === "high" ? "is above normal!" : "is below normal!",
           time: a.ALERT_TIME,
+          magnitude: a.MAGNITUDE,
         }))
         .sort((a, b) => {
           // Sort by time, most recent first
@@ -115,6 +141,15 @@ export default function PlayerStatsScreen({ route }) {
         });
 
       setPlayerAlerts(alertsForPlayer);
+
+      // Build a lookup of stat → alert severity
+      const alertLookup = {};
+      alertsForPlayer.forEach((a) => {
+        alertLookup[a.type.toLowerCase()] = a.level; // "heart rate" → "major"
+      });
+
+      setAlertLookup(alertLookup);
+
     } catch (err) {
       console.error("Error loading player alerts:", err);
     }
@@ -125,10 +160,21 @@ export default function PlayerStatsScreen({ route }) {
 
 
   // Example stats (replace with real data)
-  const impact = 25;
-  const heartRate = 100;
-  const bloodOxygen = 97;
-  const avgImpact = 20;
+  let impact = 25;
+  let heartRate = 100;
+  let bloodOxygen = 97;
+
+  if(latestStatValues["impact"]?.magnitude != null) {
+    impact = latestStatValues["impact"]?.magnitude;
+  }
+
+  if(latestStatValues["heart rate"]?.magnitude != null) {
+    heartRate = latestStatValues["heart rate"]?.magnitude;
+  }
+
+  if(latestStatValues["blood oxygen level"]?.magnitude != null) {
+    bloodOxygen = latestStatValues["blood oxygen level"]?.magnitude;
+  }
 
   // Max values of each metric
   const MAX_IMPACT = 150;
@@ -143,7 +189,6 @@ export default function PlayerStatsScreen({ route }) {
   const oxygenHeight = (bloodOxygen / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
 
   // Average line positions (same relative scaling)
-  const avgImpactHeight = (avgImpact / MAX_IMPACT) * MAX_BAR_HEIGHT;
   const maxHeartHeight = (activeHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
   const minHeartHeight = (restingHeartRate / MAX_HEARTRATE) * MAX_BAR_HEIGHT;
   const avgOxygenHeight = (baseBloodOx / MAX_BLOODOXYGEN) * MAX_BAR_HEIGHT;
@@ -165,7 +210,11 @@ export default function PlayerStatsScreen({ route }) {
           >
             <Text style={styles.barValueText}>{impact} G</Text>
           </View>
-          <Text style={styles.barLabel}>Last Impact Taken</Text>
+          <Text style={styles.barLabel}>
+            {enabled.alerts && alertLookup["heart rate"] && (
+              <Text style={[styles.alertIcon, { color: colors.alertIcon }]}>!</Text>
+            )} Last Impact Taken
+          </Text>
         </View>
         )}
 
@@ -180,8 +229,13 @@ export default function PlayerStatsScreen({ route }) {
           <View style={[styles.avgLine, { backgroundColor: colors.avgLine, bottom: minHeartHeight }]} />
         )}
         <Text style={styles.barValueText}>{heartRate} bpm</Text>
+    
         </View>
-        <Text style={styles.barLabel}>Heart Rate</Text>
+        <Text style={styles.barLabel}>
+          {enabled.alerts && alertLookup["heart rate"] && (
+            <Text style={[styles.alertIcon, { color: colors.alertIcon }]}>!</Text>
+          )} Heart Rate
+        </Text>
       </View>
       )}
 
@@ -204,7 +258,11 @@ export default function PlayerStatsScreen({ route }) {
             )}
             <Text style={styles.barValueText}>{bloodOxygen}%</Text>
           </View>
-          <Text style={styles.barLabel}>Blood Oxygen</Text>
+          <Text style={styles.barLabel}>
+            {enabled.alerts && alertLookup["blood oxygen level"] && (
+              <Text style={[styles.alertIcon, { color: colors.alertIcon }]}>!</Text>
+            )} Blood Oxygen
+          </Text>
         </View>
         )}
       </View>
@@ -414,4 +472,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
   },
+
+  alertIcon: {
+  fontSize: 18,
+  marginLeft: 6,
+  fontWeight: "bold",
+  },
+
 });
