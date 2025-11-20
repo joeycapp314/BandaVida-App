@@ -110,8 +110,20 @@ export default function PlayersScreen() {
       Alert.alert("Error", "Heartrate must be a positive number.");
       return;
     }
+    if (isNaN(parsedResting) || parsedResting > 200) {
+      Alert.alert("Error", "Heartrate cannot be greater than 200 bpm.");
+      return;
+    }
+    if (isNaN(parsedActive) || parsedActive >  200) {
+      Alert.alert("Error", "Heartrate cannot be greater than 200 bpm.");
+      return;
+    }
+    if (isNaN(parsedResting) || isNaN(parsedActive) || parsedActive <= parsedResting) {
+      Alert.alert("Error", "Active heartrate must be higher than resting heartrate.");
+      return;
+    }
     if (isNaN(parsedBloodOxygen) || parsedBloodOxygen < 0 || parsedBloodOxygen > 100) {
-      Alert.alert("Error", "Blood oxygen must be between 0 and 100 %.");
+      Alert.alert("Error", "Blood oxygen must be between 0% and 100%.");
       return;
     }
 
@@ -152,7 +164,7 @@ export default function PlayersScreen() {
         setPlayers((prev) => [...prev, newPlayer]);
       }
 
-      // Reset modal
+      //--------------- Reset modal -----------------------------
       setFormData({
         name: "", heightFeet: "", heightInches: "", weight: "", restingHR: "", activeHR: "", baseBO: ""
       });
@@ -206,6 +218,21 @@ export default function PlayersScreen() {
     // Show modal
     setModalVisible(true);
   };
+
+  //-------------- Delete player confirmation --------------------------
+  const confirmDeletePlayer = (index) => {
+    const playerToDelete = players[index];
+    Alert.alert(
+      "Delete Player",
+      `Are you sure you want to delete ${playerToDelete.name}? This action cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => handleDeletePlayer(index) },
+      ],
+      { cancelable: true }
+    );
+  };
+
 
 
   // ---------------- UI ----------------
@@ -267,6 +294,7 @@ export default function PlayersScreen() {
                   </TouchableOpacity>
                 )}
 
+                {/* ----------------- Edit Player -------------*/}
                 <TouchableOpacity
                   onPress={() => handleEditPlayer(index)}
                   style={styles.editButton}
@@ -279,8 +307,9 @@ export default function PlayersScreen() {
                   />
                 </TouchableOpacity>
 
+                {/* ----------------- Delete Player -------------*/}
                 <TouchableOpacity
-                  onPress={() => handleDeletePlayer(index)}
+                  onPress={() => confirmDeletePlayer(index)}
                   style={styles.deleteButton}
                 >
                   <Ionicons
@@ -295,14 +324,19 @@ export default function PlayersScreen() {
           ))}
         </ScrollView>
 
+        {/* ----------------- Add Player -------------*/}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            setModalVisible(true); 
+            setEditingIndex(null);
+          }}
         >
           <Text style={styles.addButtonText}>Add Player</Text>
         </TouchableOpacity>
       </View>
 
+      {/* ----------------- New Player Modal -------------*/}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -408,7 +442,7 @@ export default function PlayersScreen() {
                   onPress={handleSavePlayer}
                 >
                   <Text style={styles.confirmButtonText}>
-                    {editingIndex !== null ? "Save" : "Confirm"}
+                    {editingIndex !== null ? "Save Changes" : "Confirm"}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity

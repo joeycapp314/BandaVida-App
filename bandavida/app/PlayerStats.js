@@ -390,6 +390,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     width: "90%",
     marginTop: 10,
+    minHeight: 260,
   },
   barColumn: {
     alignItems: "center",
@@ -422,6 +423,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     textAlign: "center",
+    height: 40,
   },
   infoBox: {
     width: "85%",

@@ -18,10 +18,15 @@ export default function AlertProvider({ children }) {
       setAllAlerts(alerts);
       console.log("alerts json", alerts);
 
+      if(alerts.length === 0) return;
+
+      if(lastAlertId.current === null) {
+        lastAlertId.current = Math.max(...alerts.map(a => a.ALERT_ID));
+        return;
+      }
+
       // Filter new alerts
-      const newAlerts = alerts.filter(
-        a => lastAlertId.current === null || a.ALERT_ID > lastAlertId.current
-      );
+      const newAlerts = alerts.filter(a => a.ALERT_ID > lastAlertId.current);
       console.log("New alerts detected: ", newAlerts);
 
       if (newAlerts.length > 0) {
@@ -38,7 +43,7 @@ export default function AlertProvider({ children }) {
         });
 
         // Update lastAlertId to the latest one
-        lastAlertId.current = newAlerts[newAlerts.length - 1].ALERT_ID;
+        lastAlertId.current = Math.max(...alerts.map(a => a.ALERT_ID));
       }
     } catch (err) {
       console.error("Error polling alerts:", err);
