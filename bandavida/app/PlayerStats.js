@@ -172,8 +172,8 @@ export default function PlayerStatsScreen({ route }) {
     heartRate = latestStatValues["heart rate"]?.magnitude;
   }
 
-  if(latestStatValues["blood oxygen level"]?.magnitude != null) {
-    bloodOxygen = latestStatValues["blood oxygen level"]?.magnitude;
+  if(latestStatValues["blood oxygen"]?.magnitude != null) {
+    bloodOxygen = latestStatValues["blood oxygen"]?.magnitude;
   }
 
   // Max values of each metric
