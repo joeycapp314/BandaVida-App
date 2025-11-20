@@ -24,6 +24,7 @@ export default function AlertsScreen() {
             ? "is above normal!"
             : "is below normal!",
           time: a.ALERT_TIME,
+          magnitude: a.MAGNITUDE,
         }))
         .sort((a, b) => {
           // Sort by severity: major before minor
@@ -74,7 +75,7 @@ export default function AlertsScreen() {
                 <Text style={styles.timeStamp}>({alert.time})</Text>
               </Text>
               <Text style={styles.messageText}>
-                {alert.type} {alert.message}
+                {alert.type} {alert.message} ({alert.magnitude})
               </Text>
             </View>
           </View>

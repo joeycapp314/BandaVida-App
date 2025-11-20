@@ -350,7 +350,7 @@ export default function PlayerStatsScreen({ route }) {
                   ]}
                 >
                   <Text style={styles.alertText}>
-                    {alert.type} {alert.message} ({alert.time})
+                    {alert.type} {alert.message} ({alert.magnitude}) ({alert.time})
                   </Text>
                 </View>
               ))}
