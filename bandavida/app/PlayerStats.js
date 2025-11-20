@@ -1,6 +1,6 @@
 // PlayerStats.js
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Modal, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router"; // optional; harmless if you don't use expo-router
 
@@ -31,6 +31,8 @@ export default function PlayerStatsScreen({ route }) {
 
   const [playerAlerts, setPlayerAlerts] = useState([]);
   const [alertLookup, setAlertLookup] = useState({});
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+
 
   // Build latest alert per stat
   const latestStatValues = {};
@@ -62,7 +64,7 @@ export default function PlayerStatsScreen({ route }) {
             oxygen: settings.find((s) => s.label === "Blood Oxygen Level")?.on ?? true,
             heightWeight: settings.find((s) => s.label === "Height & Weight")?.on ?? true,
             averages: settings.find((s) => s.label === "Player Averages")?.on ?? true,
-            alerts: settings.find((s) => s.label === "Player Alerts")?.on ?? true,
+            alerts: settings.find((s) => s.label === "Show Alert on Stat")?.on ?? true,
 
           };
           setEnabled(enabledMap);
@@ -84,7 +86,7 @@ export default function PlayerStatsScreen({ route }) {
               settings.find((s) => s.label === "Player Averages")?.color ||
               colors.avgLine,
             alertIcon:
-              settings.find((s) => s.label === "Player Alerts")?.color ||
+              settings.find((s) => s.label === "Show Alert on Stat")?.color ||
               colors.alertIcon, 
           };
 
@@ -211,7 +213,7 @@ export default function PlayerStatsScreen({ route }) {
             <Text style={styles.barValueText}>{impact} G</Text>
           </View>
           <Text style={styles.barLabel}>
-            {enabled.alerts && alertLookup["heart rate"] && (
+            {enabled.alerts && alertLookup["impact"] && (
               <Text style={[styles.alertIcon, { color: colors.alertIcon }]}>!</Text>
             )} Last Impact Taken
           </Text>
@@ -259,7 +261,7 @@ export default function PlayerStatsScreen({ route }) {
             <Text style={styles.barValueText}>{bloodOxygen}%</Text>
           </View>
           <Text style={styles.barLabel}>
-            {enabled.alerts && alertLookup["blood oxygen level"] && (
+            {enabled.alerts && alertLookup["blood oxygen"] && (
               <Text style={[styles.alertIcon, { color: colors.alertIcon }]}>!</Text>
             )} Blood Oxygen
           </Text>
@@ -277,7 +279,6 @@ export default function PlayerStatsScreen({ route }) {
         </View>
       </View>
       )}
-
 
       {/* Height & Weight Box */}
       {enabled.heightWeight && (
@@ -316,23 +317,54 @@ export default function PlayerStatsScreen({ route }) {
 
       {/*  ----------- Player Alert History ------------------- */}
       {playerAlerts.length > 0 && (
-        <View style={styles.alertHistoryBox}>
-          <Text style={styles.alertHistoryTitle}>Alert History</Text>
-          {playerAlerts.map(alert => (
-            <View
-              key={alert.id}
-              style={[
-                styles.alertItem,
-                alert.level === "major" ? styles.majorBackground : styles.minorBackground,
-              ]}
-            >
-              <Text style={styles.alertText}>
-                {alert.type} {alert.message} ({alert.time})
-              </Text>
-            </View>
-          ))}
-        </View>
+        <TouchableOpacity
+          style={styles.alertHistoryButton}
+          onPress={() => setAlertModalVisible(true)}
+        >
+          <Text style={styles.alertHistoryButtonText}>See Alert History</Text>
+        </TouchableOpacity>
       )}
+
+      <Modal
+        visible={alertModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setAlertModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.alertModalBox}>
+            <Text style={styles.alertHistoryTitle}>Alert History</Text>
+
+            <ScrollView
+              style={{ maxHeight: 300 }}
+              nestedScrollEnabled={true}
+            >
+              {playerAlerts.map(alert => (
+                <View
+                  key={alert.id}
+                  style={[
+                    styles.alertItem,
+                    alert.level === "major"
+                      ? styles.majorBackground
+                      : styles.minorBackground
+                  ]}
+                >
+                  <Text style={styles.alertText}>
+                    {alert.type} {alert.message} ({alert.time})
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.closeAlertModalButton}
+              onPress={() => setAlertModalVisible(false)}
+            >
+              <Text style={styles.closeAlertModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
     </View>
   );
@@ -371,6 +403,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 12,
     position: "relative",
+    minHeight: 30,
   },
   avgLine: {
     position: "absolute",
@@ -444,6 +477,7 @@ const styles = StyleSheet.create({
   borderRadius: 6,
   borderColor: "#ccc",
   backgroundColor: "#f9f9f9",
+  maxHeight: 160,
   },
 
   alertHistoryTitle: {
@@ -477,6 +511,53 @@ const styles = StyleSheet.create({
   fontSize: 18,
   marginLeft: 6,
   fontWeight: "bold",
+  },
+  alertScroll: {
+    maxHeight: 180,
+    marginTop: 5,
+  },
+  alertHistoryButton: {
+    backgroundColor: "#E83030",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 50,
+  },
+  alertHistoryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  alertModalBox: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    maxHeight: "70%",
+    elevation: 5,
+  },
+
+  closeAlertModalButton: {
+    marginTop: 15,
+    alignSelf: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: "#2E6375",
+    borderRadius: 8,
+  },
+
+  closeAlertModalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 
 });

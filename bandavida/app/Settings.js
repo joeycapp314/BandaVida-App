@@ -17,7 +17,7 @@ export default function SettingsScreen({ navigation }) {
     { label: "Blood Oxygen Level", color: "#E83030", on: true },
     { label: "Height & Weight", color: "#9FD7F0", on: true },
     { label: "Player Averages", color: "#000000", on: true },
-    { label: "Player Alerts", color: "#FFF200", on: false },
+    { label: "Show Alert on Stat", color: "#FFF200", on: false },
   ];
 
   const [settings, setSettings] = useState(defaultSettings);
@@ -311,7 +311,6 @@ const styles = StyleSheet.create({
     color: "#007BFF",
     fontSize: 16,
   },
-
   resetButton: {
   backgroundColor: "#FF4C4C",
   paddingVertical: 12,
@@ -319,8 +318,8 @@ const styles = StyleSheet.create({
   borderRadius: 6,
   alignItems: "center",
   marginVertical: 20,
+  marginBottom: 50,
   },
-
   resetButtonText: {
   color: "#fff",
   fontWeight: "700",

@@ -408,7 +408,7 @@ export default function PlayersScreen() {
                   onPress={handleSavePlayer}
                 >
                   <Text style={styles.confirmButtonText}>
-                    {editingIndex !== null ? "Save Changes" : "Confirm"}
+                    {editingIndex !== null ? "Save" : "Confirm"}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
