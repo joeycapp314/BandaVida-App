@@ -74,7 +74,7 @@ parser.on('data', async (line) => {
             // attempt to extract g=... from detail
             const m = detail.match(/g=([0-9.]+)|magnitude=([0-9.]+)/);
             if (m) magnitude = parseFloat(m[1] || m[2]);
-            if (magnitude >= 75) severity = 'major';
+            if (magnitude >= 70) severity = 'major';
             hilo = 'high';
           } else if (type === 'HR_ALERT') {
             alertType = 'heart rate';
