@@ -6,7 +6,7 @@ export default function AlertsScreen() {
   const [loading, setLoading] = useState(true);
 
   // Update this URL if you’re running the backend elsewhere (e.g. partner’s machine)
-  const API_BASE_URL = "http://10.132.7.139:5000";  
+  const API_BASE_URL = "http://10.132.20.218:5000";  
 
   useEffect(() => {
     const fetchAlerts = async () => {
