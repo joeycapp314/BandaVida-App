@@ -124,7 +124,7 @@ export default function PlayerStatsScreen({ route }) {
   useEffect(() => {
   const loadPlayerAlerts = async () => {
     try {
-      const response = await fetch("http://10.132.20.218:5000/alert");
+      const response = await fetch("http://10.132.19.46:5000/alert");
       const data = await response.json();
 
       const alertsForPlayer = data

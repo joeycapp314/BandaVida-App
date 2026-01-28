@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const oracledb = require('oracledb');
 
 const PORT = process.env.SERIAL_HTTP_PORT || 6000;
-const SERIAL_PATH = process.env.GATEWAY_SERIAL_PATH || "COM6"; // set to your serial port
+const SERIAL_PATH = process.env.GATEWAY_SERIAL_PATH || "COM3"; // set to your serial port
 const SERIAL_BAUD = parseInt(process.env.GATEWAY_SERIAL_BAUD || "115200", 10);
 
 const app = express();
